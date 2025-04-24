@@ -1,6 +1,9 @@
 [
   {
     "request_id": "request_id_7878693",
+    "date": "unknown",
+    "amount": "unknown",
+    "purpose": "unknown",
     "status": "approved"
   },
   {
@@ -8,6 +11,20 @@
     "date": "2025-04-24",
     "amount": "300",
     "purpose": "lunch with Client-Google",
+    "status": "approved"
+  },
+  {
+    "request_id": "request_id_2342613",
+    "date": "2025-04-24",
+    "amount": "300",
+    "purpose": "lunch with Client-Google",
+    "status": "approved"
+  },
+  {
+    "request_id": "request_id_5341285",
+    "date": "2025-04-23",
+    "amount": "300",
+    "purpose": "Play Golf with client-A",
     "status": "approved"
   }
 ]
