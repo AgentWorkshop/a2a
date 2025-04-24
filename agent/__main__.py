@@ -22,26 +22,38 @@ def main(host, port):
                 raise MissingAPIKeyError("GOOGLE_API_KEY environment variable not set.")
         
         capabilities = AgentCapabilities(streaming=True)
-        skill = AgentSkill(
+        skill_process = AgentSkill(
             id="process_reimbursement",
             name="Process Reimbursement Tool",
             description="Helps with the reimbursement process for users given the amount and purpose of the reimbursement.",
             tags=["reimbursement"],
             examples=[
-    "2025-04-24, amount: 300, lunch with Client-Google",
-    "2025-04-24, amount: 300, dinner with Client-Microsoft",
-    "Can you reimburse me $20 for my lunch with the clients?",
-],
+                "2025-04-24, amount: 300, lunch with Client-Google",
+                "2025-04-24, amount: 300, dinner with Client-Microsoft",
+                "Can you reimburse me $20 for my lunch with the clients?",
+            ],
+        )
+        skill_retrieve = AgentSkill(
+            id="retrieve_reimbursements",
+            name="Retrieve Reimbursement Records",
+            description="Allows users to retrieve their past reimbursement requests and statuses, optionally filtered by date, amount, or purpose.",
+            tags=["reimbursement", "history", "query"],
+            examples=[
+                "Show all my past reimbursements",
+                "List reimbursements for 2025-04-24",
+                "Get all reimbursements for lunch with Client-Google",
+                "Show reimbursements with amount 300",
+            ],
         )
         agent_card = AgentCard(
             name="Reimbursement Agent",
-            description="This agent handles the reimbursement process for the employees given the amount and purpose of the reimbursement.",
+            description="This agent handles the reimbursement process for the employees given the amount and purpose of the reimbursement, and can also retrieve past reimbursement records.",
             url=f"http://{host}:{port}/",
             version="1.0.0",
             defaultInputModes=ReimbursementAgent.SUPPORTED_CONTENT_TYPES,
             defaultOutputModes=ReimbursementAgent.SUPPORTED_CONTENT_TYPES,
             capabilities=capabilities,
-            skills=[skill],
+            skills=[skill_process, skill_retrieve],
         )
         server = A2AServer(
             agent_card=agent_card,

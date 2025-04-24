@@ -1,5 +1,6 @@
 import json
 import random
+import os
 from typing import Any, AsyncIterable, Dict, Optional
 from google.adk.agents.llm_agent import LlmAgent
 from google.adk.tools.tool_context import ToolContext
@@ -12,6 +13,36 @@ from google.genai import types
 # Local cache of created request_ids for demo purposes.
 request_ids = set()
 
+# Pending reimbursement requests (request_id -> details)
+pending_requests = {}
+
+RECORDS_FILE = os.path.join(os.path.dirname(__file__), "reimbursement_records.json")
+
+def load_records():
+    required_fields = ["request_id", "date", "amount", "purpose", "status"]
+    records = []
+    if os.path.exists(RECORDS_FILE):
+        with open(RECORDS_FILE, "r") as f:
+            try:
+                loaded = json.load(f)
+                for rec in loaded:
+                    migrated = {k: rec.get(k, None) for k in required_fields}
+                    # For legacy: if only request_id and status, set others to 'unknown'
+                    if migrated["date"] is None: migrated["date"] = "unknown"
+                    if migrated["amount"] is None: migrated["amount"] = "unknown"
+                    if migrated["purpose"] is None: migrated["purpose"] = "unknown"
+                    records.append(migrated)
+            except Exception:
+                return []
+    return records
+
+def save_records(records):
+    with open(RECORDS_FILE, "w") as f:
+        json.dump(records, f, indent=2)
+
+# In-memory store for reimbursement records
+reimbursement_records = load_records()
+
 
 def create_request_form(date: Optional[str] = None, amount: Optional[str] = None, purpose: Optional[str] = None) -> dict[str, Any]:
     """
@@ -19,12 +50,15 @@ def create_request_form(date: Optional[str] = None, amount: Optional[str] = None
     """
     request_id = "request_id_" + str(random.randint(1000000, 9999999))
     request_ids.add(request_id)
-    return {
+    form = {
         "request_id": request_id,
         "date": "<transaction date>" if not date else date,
         "amount": "<transaction dollar amount>" if not amount else amount,
         "purpose": "<business justification/purpose of the transaction>" if not purpose else purpose,
     }
+    # Store pending request for full details
+    pending_requests[request_id] = form.copy()
+    return form
 
 def return_form(
     form_request: dict[str, Any],
@@ -77,7 +111,29 @@ def reimburse(request_id: str) -> dict[str, Any]:
     """Reimburse the amount of money to the employee for a given request_id."""
     if request_id not in request_ids:
         return {"request_id": request_id, "status": "Error: Invalid request_id."}
-    return {"request_id": request_id, "status": "approved"}
+    # Retrieve full details from pending requests if available
+    details = pending_requests.get(request_id, {"request_id": request_id})
+    record = details.copy()
+    record["status"] = "approved"
+    reimbursement_records.append(record)
+    save_records(reimbursement_records)
+    # Optionally remove from pending
+    if request_id in pending_requests:
+        del pending_requests[request_id]
+    return record
+
+def get_reimbursements(date: Optional[str] = None, amount: Optional[str] = None, purpose: Optional[str] = None) -> list[dict[str, Any]]:
+    """
+    Retrieve reimbursement records, optionally filtered by date, amount, or purpose.
+    """
+    results = reimbursement_records
+    if date:
+        results = [r for r in results if r.get("date") == date]
+    if amount:
+        results = [r for r in results if str(r.get("amount")) == str(amount)]
+    if purpose:
+        results = [r for r in results if purpose.lower() in str(r.get("purpose", "")).lower()]
+    return results
 
 
 class ReimbursementAgent:
@@ -192,5 +248,6 @@ class ReimbursementAgent:
                 create_request_form,
                 reimburse,
                 return_form,
+                get_reimbursements,
             ],
         )
