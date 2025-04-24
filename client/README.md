@@ -22,3 +22,6 @@ The client will use streaming if the server supports it.
     ```
 
    for example `--agent http://localhost:10000`. More command line options are documented in the source code. 
+
+To get started, clone the repository: 
+git clone git@github.com:AgentWorkshop/sample-agent-single.git

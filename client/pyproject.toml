@@ -1,8 +1,10 @@
 [project]
-name = "adk-client"
+name = "sample-agent-single" # adk-client"
 version = "0.1.0"
 description = "A CLI application that demonstrates the capabilities of an A2AClient."
 readme = "README.md"
+homepage = "https://github.com/AgentWorkshop/sample-agent-single"
+repository = "git@github.com:AgentWorkshop/sample-agent-single.git"
 requires-python = ">=3.12"
 dependencies = [
     "click>=8.1.8",

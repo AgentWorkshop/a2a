@@ -14,7 +14,8 @@ This project contains:
 
 1. **Clone the repo and set up your environment:**
     ```bash
-    git clone git@github.com:AgentWorkshop/a2a.git
+    git clone git@github.com:AgentWorkshop/sample-agent-single.git
+git@github.com:AgentWorkshop/a2a.git
     cd a2a
     ```
 
