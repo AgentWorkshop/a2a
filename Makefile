@@ -1,9 +1,6 @@
 # Makefile for running agent.py with uv and installing uv if needed
 
-.PHONY: local install run-client
-
-local:
-	uv run .
+.PHONY: run-agent install run-client
 
 install:
 	@if ! command -v uv >/dev/null 2>&1; then \
@@ -11,6 +8,9 @@ install:
 	else \
 		echo "uv is already installed"; \
 	fi
+
+run-agent:
+	uv run .
 
 run-client:
 	uv run client --agent http://localhost:10002
