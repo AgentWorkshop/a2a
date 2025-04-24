@@ -9,6 +9,23 @@ from common.client import A2AClient, A2ACardResolver
 from common.types import TaskState, Task, TextPart, FilePart, FileContent
 from common.utils.push_notification_auth import PushNotificationReceiverAuth
 
+try:
+    from prompt_toolkit import prompt as pt_prompt
+except ImportError:
+    pt_prompt = None
+
+def safe_prompt(text, default=None, show_default=True):
+    if pt_prompt:
+        # prompt_toolkit prompt
+        try:
+            return pt_prompt(text)
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting client. Goodbye!")
+            raise
+    else:
+        # fallback to click.prompt
+        return click.prompt(text, default=default, show_default=show_default)
+
 
 @click.command()
 @click.option("--agent", default="http://localhost:10000")
@@ -51,17 +68,24 @@ async def cli(agent, session, history, use_push_notifications: bool, push_notifi
     while continue_loop:
         taskId = uuid4().hex
         print("=========  starting a new task ======== ")
-        continue_loop = await completeTask(client, streaming, use_push_notifications, notification_receiver_host, notification_receiver_port, taskId, sessionId)
+        try:
+            continue_loop = await completeTask(client, streaming, use_push_notifications, notification_receiver_host, notification_receiver_port, taskId, sessionId)
+        except (KeyboardInterrupt, EOFError):
+            print("\nExiting client. Goodbye!")
+            return
 
         if history and continue_loop:
             print("========= history ======== ")
             task_response = await client.get_task({"id": taskId, "historyLength": 10})
             print(task_response.model_dump_json(include={"result": {"history": True}}))
 
+
 async def completeTask(client: A2AClient, streaming, use_push_notifications: bool, notification_receiver_host: str, notification_receiver_port: int, taskId, sessionId):
-    prompt = click.prompt(
-        "\nWhat do you want to send to the agent? (:q or quit to exit)"
-    )
+    try:
+        prompt = safe_prompt("\nWhat do you want to send to the agent? (:q or quit to exit)")
+    except (KeyboardInterrupt, EOFError):
+        print("\nExiting client. Goodbye!")
+        return False
     if prompt == ":q" or prompt == "quit":
         return False
     
@@ -75,11 +99,15 @@ async def completeTask(client: A2AClient, streaming, use_push_notifications: boo
         ]
     }
     
-    file_path = click.prompt(
-        "Select a file path to attach? (press enter to skip)",
-        default="",
-        show_default=False,
-    )
+    try:
+        file_path = safe_prompt(
+            "Select a file path to attach? (press enter to skip)",
+            default="",
+            show_default=False,
+        )
+    except (KeyboardInterrupt, EOFError):
+        print("\nExiting client. Goodbye!")
+        return False
     if file_path and file_path.strip() != "":
         with open(file_path, "rb") as f:
             file_content = base64.b64encode(f.read()).decode('utf-8')

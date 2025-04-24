@@ -1,0 +1,3 @@
+# Example reimbursement requests for the CLI client
+2025-04-24, amount: 300, lunch with Client-Google
+2025-04-24, amount: 300, dinner with Client-Microsoft

@@ -12,6 +12,7 @@ dependencies = [
     "starlette>=0.46.1",
     "jwcrypto>=1.5",
     "PyJWT>=2.0",
+    "prompt_toolkit>=3.0.43",
 ]
 
 [tool.hatch.build.targets.wheel]

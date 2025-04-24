@@ -10,7 +10,7 @@ install:
 	fi
 
 run-agent:
-	uv run .
+	uv run agent
 
 run-client:
 	uv run client --agent http://localhost:10002

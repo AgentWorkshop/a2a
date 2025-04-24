@@ -1,7 +1,7 @@
 from common.server import A2AServer
 from common.types import AgentCard, AgentCapabilities, AgentSkill, MissingAPIKeyError
-from task_manager import AgentTaskManager
-from agent import ReimbursementAgent
+from agent.task_manager import AgentTaskManager
+from agent.reimbursement_agent import ReimbursementAgent
 import click
 import os
 import logging
@@ -27,7 +27,11 @@ def main(host, port):
             name="Process Reimbursement Tool",
             description="Helps with the reimbursement process for users given the amount and purpose of the reimbursement.",
             tags=["reimbursement"],
-            examples=["Can you reimburse me $20 for my lunch with the clients?"],
+            examples=[
+    "2025-04-24, amount: 300, lunch with Client-Google",
+    "2025-04-24, amount: 300, dinner with Client-Microsoft",
+    "Can you reimburse me $20 for my lunch with the clients?",
+],
         )
         agent_card = AgentCard(
             name="Reimbursement Agent",
